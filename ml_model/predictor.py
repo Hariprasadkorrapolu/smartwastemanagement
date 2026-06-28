@@ -81,9 +81,9 @@ def predict_waste(image_path):
     except PredictionError:
         raise
     except Exception as exc:
-    logger.exception("TensorFlow prediction failed")
-    traceback.print_exc()
-    raise PredictionError(str(exc)) from exc
+        logger.exception("TensorFlow prediction failed")
+        traceback.print_exc()
+        raise PredictionError(str(exc)) from exc
 
     scores = np.asarray(predictions)[0]
     predicted_index = int(np.argmax(scores))
