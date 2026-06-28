@@ -1,0 +1,5 @@
+0 Wet Waste
+1 Dry Waste
+2 Special Waste
+3 Invalid 
+4 Sanitary Waste

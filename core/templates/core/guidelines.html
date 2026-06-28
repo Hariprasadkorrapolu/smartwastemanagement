@@ -1,0 +1,188 @@
+{% extends "core/base.html" %}
+{% block title %}Guidelines | Smart Waste{% endblock %}
+{% block content %}
+<section class="guide-dashboard guide-dashboard--compact">
+    <header class="guide-hero guide-hero--compact">
+        <div>
+            <span class="guide-kicker">Eco Learning Dashboard</span>
+            <h1>Guidelines & Waste Learning Hub</h1>
+            <p>Learn proper segregation and safe eco practices from admin-curated learning cards.</p>
+        </div>
+        <div class="guide-hero__count">
+            <span>Active Guides</span>
+            <strong>{{ guidelines|length }}</strong>
+        </div>
+    </header>
+
+    <div class="guide-layout">
+        <aside class="guide-sidebar">
+            <section class="guide-tip-card">
+                <div class="guide-tip-card__icon">
+                    <svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /><path d="M9 18h6" /><path d="M10 22h4" /></svg>
+                </div>
+                <div>
+                    <span>Eco Tip</span>
+                    <p>
+                        {% if ai_tip %}
+                            {{ ai_tip.ai_eco_tip|default:ai_tip.short_description }}
+                        {% else %}
+                            Segregating waste correctly reduces pollution and helps build cleaner communities.
+                        {% endif %}
+                    </p>
+                </div>
+            </section>
+
+            <section class="guide-quick-card">
+                <span>Learning Focus</span>
+                <div>
+                    <strong>Segregate</strong>
+                    <strong>Recycle</strong>
+                    <strong>Dispose Safely</strong>
+                </div>
+            </section>
+        </aside>
+
+        <section class="guide-card-grid guide-card-grid--compact">
+            {% for guideline in guidelines %}
+                <article class="guide-card guide-card--compact" style="--guide-color: {{ guideline.display_color }};">
+                    <div class="guide-card__body">
+                        <div class="guide-card__topline">
+                            <span class="guide-badge">{{ guideline.category }}</span>
+                            <div class="guide-card__icon">
+                                {% if guideline.category == "Dry Waste" %}
+                                    <svg viewBox="0 0 24 24"><path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" /><path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12" /><path d="m14 16-3 3 3 3" /><path d="M8.293 13.596 7.196 9.5 3.1 10.598" /><path d="m9.344 5.811 1.093-1.892A1.83 1.83 0 0 1 11.985 3a1.784 1.784 0 0 1 1.546.888l3.943 6.843" /><path d="m13.378 9.633 4.096 1.098 1.097-4.096" /></svg>
+                                {% elif guideline.category == "Special Waste" or guideline.category == "Sanitary Waste" %}
+                                    <svg viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /></svg>
+                                {% else %}
+                                    <svg viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" /><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" /></svg>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <h3>{{ guideline.title }}</h3>
+                        <p>{{ guideline.short_description|default:guideline.detailed_tips|truncatechars:120 }}</p>
+                    </div>
+
+                    <div class="guide-card__footer">
+                        <div class="guide-card__media guide-card__media--thumb">
+                            {% if guideline.media_type == "Image" and guideline.media_file %}
+                                <img src="{{ guideline.media_file.url }}" alt="{{ guideline.title }}">
+                            {% elif guideline.media_type == "Video" and guideline.media_file %}
+                                <video muted playsinline preload="metadata">
+                                    <source src="{{ guideline.media_file.url }}">
+                                </video>
+                            {% elif guideline.media_type == "YouTube" %}
+                                {% if guideline.resolved_media_url_type == "youtube" %}
+                                    <iframe src="{{ guideline.youtube_embed_url }}" title="{{ guideline.title }}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                                {% elif guideline.resolved_media_url_type == "image" %}
+                                    <img src="{{ guideline.youtube_url }}" alt="{{ guideline.title }}">
+                                {% else %}
+                                    <div class="guide-card__placeholder">
+                                        <span class="placeholder-text text-muted small p-2 text-center d-block">Invalid media URL</span>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="guide-card__placeholder">
+                                    <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <button class="guide-card__button" type="button" data-bs-toggle="modal" data-bs-target="#guidelineModal{{ guideline.id }}">
+                            Learn More
+                        </button>
+                    </div>
+
+                    <div class="guide-tags guide-tags--compact">
+                        {% for tag in guideline.badge_list|slice:":2" %}
+                            <span>{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </article>
+
+                <div class="modal fade guide-modal" id="guidelineModal{{ guideline.id }}" tabindex="-1" aria-labelledby="guidelineModalLabel{{ guideline.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content" style="--guide-color: {{ guideline.display_color }};">
+                            <div class="modal-header">
+                                <div>
+                                    <span class="guide-modal__category">{{ guideline.category }}</span>
+                                    <h2 class="modal-title" id="guidelineModalLabel{{ guideline.id }}">{{ guideline.title }}</h2>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="guide-modal-grid">
+                                    <div>
+                                        <div class="guide-modal__media">
+                                            {% if guideline.media_type == "Image" and guideline.media_file %}
+                                                <img src="{{ guideline.media_file.url }}" alt="{{ guideline.title }}">
+                                            {% elif guideline.media_type == "Video" and guideline.media_file %}
+                                                <video controls preload="metadata">
+                                                    <source src="{{ guideline.media_file.url }}">
+                                                </video>
+                                            {% elif guideline.media_type == "YouTube" %}
+                                                {% if guideline.resolved_media_url_type == "youtube" %}
+                                                    <iframe src="{{ guideline.youtube_embed_url }}" title="{{ guideline.title }}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                                                {% elif guideline.resolved_media_url_type == "image" %}
+                                                    <img src="{{ guideline.youtube_url }}" alt="{{ guideline.title }}">
+                                                {% else %}
+                                                    <div class="guide-modal__placeholder-message text-center p-4 w-100 d-flex flex-column align-items-center justify-content-center" style="height: 100%; min-height: 180px;">
+                                                        <svg viewBox="0 0 24 24" width="48" height="48" class="mb-2 text-muted" style="stroke: currentColor; fill: none; stroke-width: 1.5;"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
+                                                        <p class="text-muted mb-0 small">Invalid or unsupported media URL</p>
+                                                    </div>
+                                                {% endif %}
+                                            {% else %}
+                                                <div class="guide-modal__placeholder">
+                                                    <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        {% if guideline.ai_eco_tip %}
+                                            <div class="guide-tip-card guide-tip-card--compact mt-3">
+                                                <div class="guide-tip-card__icon">
+                                                    <svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" /><path d="M9 18h6" /><path d="M10 22h4" /></svg>
+                                                </div>
+                                                <div>
+                                                    <span>Did You Know?</span>
+                                                    <p>{{ guideline.ai_eco_tip|linebreaksbr }}</p>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="guide-modal__content">
+                                        <section class="guide-info-panel">
+                                            <span>Detailed Explanation</span>
+                                            <p>{{ guideline.detailed_tips|default:guideline.short_description|linebreaksbr }}</p>
+                                        </section>
+
+                                        <div class="guide-do-grid">
+                                            <section class="guide-do-card guide-do-card--do">
+                                                <span>DO THIS</span>
+                                                <p>{{ guideline.dos|default:"Follow safe segregation practices and keep this waste type separate."|linebreaksbr }}</p>
+                                            </section>
+                                            <section class="guide-do-card guide-do-card--dont">
+                                                <span>AVOID THIS</span>
+                                                <p>{{ guideline.donts|default:"Do not mix this waste with unrelated categories or unsafe materials."|linebreaksbr }}</p>
+                                            </section>
+                                        </div>
+
+                                        <section class="guide-info-panel">
+                                            <span>Recycling Tips</span>
+                                            <p>{{ guideline.recycling_tips|default:"Reuse, recycle, or dispose through the recommended local waste channel whenever possible."|linebreaksbr }}</p>
+                                        </section>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="guide-empty">
+                    <h2>No active learning content yet</h2>
+                    <p>Add guidelines from Django Admin to populate this learning hub.</p>
+                </div>
+            {% endfor %}
+        </section>
+    </div>
+</section>
+{% endblock %}

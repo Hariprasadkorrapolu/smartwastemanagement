@@ -1,0 +1,288 @@
+{% extends "core/base.html" %}
+{% load tz %}
+{% block title %}Rewards | Smart Waste{% endblock %}
+{% block content %}
+<section class="rewards-dashboard">
+    <header class="rewards-hero">
+        <div>
+            <span class="rewards-kicker">Eco Rewards Dashboard</span>
+            <h1>{{ total_points }} Points</h1>
+            <p>{{ badge }} Badge</p>
+        </div>
+        <div class="rewards-hero__stats">
+            <div>
+                <span>Eco Rank</span>
+                <strong>#{{ eco_rank }}</strong>
+            </div>
+            <div>
+                <span>Approved Uploads</span>
+                <strong>{{ impact.contributions }}</strong>
+            </div>
+        </div>
+    </header>
+
+    <div class="rewards-top-grid">
+        <article class="reward-card reward-progress-card">
+            <div class="reward-card__heading">
+                <div>
+                    <span>Next Badge Progress</span>
+                    {% if next_badge %}
+                    <h2>{{ current_badge.name }} to {{ next_badge.name }}</h2>
+                    {% else %}
+                    <h2>{{ current_badge.name }}</h2>
+                    {% endif %}
+                </div>
+                <strong>{{ progress_percent }}%</strong>
+            </div>
+            <div class="reward-progress">
+                <span style="--reward-progress: {{ progress_percent }}%;"></span>
+            </div>
+            {% if next_badge %}
+            <p>{{ total_points }} / {{ next_badge.threshold }} Points</p>
+            {% else %}
+            <p>Top badge reached. Keep building your eco impact.</p>
+            {% endif %}
+        </article>
+
+        <article class="reward-card reward-impact-card">
+            <div class="reward-card__heading d-flex flex-column align-items-start gap-1">
+                <h2>My Impact</h2>
+                <p class="text-muted mb-0" style="font-size: 0.85rem; font-weight: 500;">Track your personal waste
+                    management contribution.</p>
+            </div>
+            <div class="impact-grid mt-3">
+                <!-- Card 1 -->
+                <div class="impact-card impact-card--green">
+                    <span class="impact-icon-circle bg-green-soft text-green">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />
+                            <path d="M11 19h8.203a1.83 1.83 0 0 0 1.556-.89 1.784 1.784 0 0 0 0-1.775l-1.226-2.12" />
+                            <path d="m14 16-3 3 3 3" />
+                            <path d="M8.293 13.596 7.196 9.5 3.1 10.598" />
+                            <path d="m9.344 5.811 1.093-1.892A1.83 1.83 0 0 1 11.985 3a1.784 1.784 0 0 1 1.546.888l3.943 6.843" />
+                            <path d="m13.378 9.633 4.096 1.098 1.097-4.096" />
+                        </svg>
+                    </span>
+                    <div class="impact-card__details">
+                        <span class="impact-card__title">Waste Items Classified</span>
+                        <strong class="impact-card__value">{{ total_uploads }}</strong>
+                        <span class="impact-card__subtitle">Successful waste submissions</span>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="impact-card impact-card--purple">
+                    <span class="impact-icon-circle bg-purple-soft text-purple">
+                        <svg viewBox="0 0 24 24">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+                            <path d="M12 9v4" />
+                            <path d="M12 17h.01" />
+                        </svg>
+                    </span>
+                    <div class="impact-card__details">
+                        <span class="impact-card__title">Special Waste</span>
+                        <strong class="impact-card__value">{{ special_waste_count }}</strong>
+                        <span class="impact-card__subtitle">Special waste detected</span>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="impact-card impact-card--gold">
+                    <span class="impact-icon-circle bg-gold-soft text-gold">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
+                        </svg>
+                    </span>
+                    <div class="impact-card__details">
+                        <span class="impact-card__title">Points Earned</span>
+                        <strong class="impact-card__value">{{ total_points }}</strong>
+                        <span class="impact-card__subtitle">Reward points collected</span>
+                    </div>
+                </div>
+                <!-- Card 4 -->
+                <div class="impact-card impact-card--blue">
+                    <span class="impact-icon-circle bg-blue-soft text-blue">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978" />
+                            <path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978" />
+                            <path d="M18 9h1.5a1 1 0 0 0 0-5H18" />
+                            <path d="M4 22h16" />
+                            <path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z" />
+                            <path d="M6 9H4.5a1 1 0 0 1 0-5H6" />
+                        </svg>
+                    </span>
+                    <div class="impact-card__details">
+                        <span class="impact-card__title">Current Rank</span>
+                        <strong class="impact-card__value">#{{ user_rank }}</strong>
+                        <span class="impact-card__subtitle">Leaderboard position</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <section class="reward-card reward-journey">
+        <div class="reward-card__heading">
+            <h2>Badge Journey</h2>
+        </div>
+        <div class="badge-journey">
+            {% for level in badge_levels %}
+            <div
+                class="badge-node {% if total_points >= level.threshold %}is-complete{% endif %} {% if level.name == current_badge.name %}is-current{% endif %}">
+                <div class="badge-node__icon">
+                    <svg>
+                        <use href="#eco-{{ level.icon }}"></use>
+                    </svg>
+                </div>
+                <span>{{ level.threshold }}</span>
+                <strong>{{ level.name }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="reward-stat-grid">
+        <article class="reward-card reward-mini-stat">
+            <div class="reward-mini-stat__icon">
+                <svg>
+                    <use href="#eco-chart"></use>
+                </svg>
+            </div>
+            <span>Weekly Points</span>
+            <strong>+{{ weekly_points }}</strong>
+        </article>
+        <article class="reward-card reward-mini-stat">
+            <div class="reward-mini-stat__icon">
+                <svg>
+                    <use href="#eco-chart"></use>
+                </svg>
+            </div>
+            <span>Monthly Points</span>
+            <strong>+{{ monthly_points }}</strong>
+        </article>
+        <article class="reward-card reward-mini-stat">
+            <div class="reward-mini-stat__icon">
+                <svg>
+                    <use href="#eco-upload"></use>
+                </svg>
+            </div>
+            <span>Uploads This Week</span>
+            <strong>{{ weekly_uploads }}</strong>
+        </article>
+        <article class="reward-card reward-mini-stat">
+            <div class="reward-mini-stat__icon">
+                <svg>
+                    <use href="#eco-upload"></use>
+                </svg>
+            </div>
+            <span>Uploads This Month</span>
+            <strong>{{ monthly_uploads }}</strong>
+        </article>
+    </section>
+
+    <div class="rewards-lower-grid">
+        <section class="reward-card">
+            <div class="reward-card__heading">
+                <h2>Achievements</h2>
+            </div>
+            <div class="achievement-grid">
+                {% for achievement in achievements %}
+                <article class="achievement-card {% if achievement.unlocked %}is-unlocked{% endif %}">
+                    <div class="achievement-card__icon">
+                        <svg>
+                            <use href="#eco-{{ achievement.icon }}"></use>
+                        </svg>
+                    </div>
+                    <span>{% if achievement.unlocked %}Unlocked{% else %}Locked{% endif %}</span>
+                    <strong>{{ achievement.name }}</strong>
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="reward-card">
+            <div class="reward-card__heading">
+                <h2>Recent Activity</h2>
+            </div>
+            <div class="reward-activity" id="activityList">
+                {% for item in activity %}
+                <article class="reward-activity__item reward-activity__item--{{ item.meta.class }}">
+                    <span>
+                        <svg>
+                            <use href="#eco-{{ item.meta.icon }}"></use>
+                        </svg>
+                    </span>
+                    <div>
+                        <strong>+{{ item.submission.points }} Points</strong>
+                        <p>{{ item.meta.label }}</p>
+                    </div>
+                    <time>{{ item.submission.timestamp|localtime|date:"d M Y, g:i A" }}</time>
+                </article>
+                {% empty %}
+                <p class="reward-empty">No approved rewards yet.</p>
+                {% endfor %}
+            </div>
+
+            {% if activity %}
+            <div class="activity-pagination"
+                style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; gap: 1rem;">
+                <button type="button" class="btn btn-outline-success btn-sm" id="prevActivityBtn"
+                    style="border-radius: 10px !important;">Previous</button>
+                <span class="text-muted" id="activityPageIndicator" style="font-size: 0.9rem; font-weight: 500;">Page 1
+                    of 1</span>
+                <button type="button" class="btn btn-outline-success btn-sm" id="nextActivityBtn"
+                    style="border-radius: 10px !important;">Next</button>
+            </div>
+            {% endif %}
+        </section>
+    </div>
+</section>
+
+{% if activity %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const items = document.querySelectorAll("#activityList .reward-activity__item");
+        const prevBtn = document.getElementById("prevActivityBtn");
+        const nextBtn = document.getElementById("nextActivityBtn");
+        const indicator = document.getElementById("activityPageIndicator");
+
+        const itemsPerPage = 5;
+        let currentPage = 1;
+        const totalPages = Math.ceil(items.length / itemsPerPage);
+
+        function showPage(page) {
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            currentPage = page;
+
+            items.forEach((item, idx) => {
+                const start = (currentPage - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                if (idx >= start && idx < end) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+
+            indicator.textContent = `Page ${currentPage} of ${totalPages}`;
+
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+        }
+
+        prevBtn.addEventListener("click", () => {
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+            }
+        });
+
+        nextBtn.addEventListener("click", () => {
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+            }
+        });
+
+        showPage(1);
+    });
+</script>
+{% endif %}
+{% endblock %}

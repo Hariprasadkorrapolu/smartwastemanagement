@@ -1,0 +1,378 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% block title %}Home | Smart Waste Management{% endblock %}
+{% block content %}
+{% if carousel_images %}
+<section class="home-banner-card" aria-label="Waste awareness and government updates">
+    <div class="home-banner-display">
+        <div id="homeHeroCarousel" class="carousel slide carousel-fade home-carousel" data-bs-ride="carousel" data-bs-interval="5000" data-bs-touch="true" data-bs-pause="hover">
+            <!-- Indicators -->
+            {% if carousel_images|length > 1 %}
+                <div class="carousel-indicators custom-indicators">
+                    {% for image in carousel_images %}
+                        <button type="button" data-bs-target="#homeHeroCarousel" data-bs-slide-to="{{ forloop.counter0 }}" class="{% if forloop.first %}active{% endif %}" {% if forloop.first %}aria-current="true"{% endif %} aria-label="Slide {{ forloop.counter }}"></button>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Slides -->
+            <div class="carousel-inner">
+                {% for image in carousel_images %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="carousel-img-container">
+                            <img src="{% static image %}" class="home-carousel__image" alt="Solid Waste Management banner slide {{ forloop.counter }}" loading="lazy" decoding="async">
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Overlay Controls -->
+            {% if carousel_images|length > 1 %}
+                <button class="carousel-control-prev custom-control-btn" type="button" data-bs-target="#homeHeroCarousel" data-bs-slide="prev">
+                    <span class="custom-control-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next custom-control-btn" type="button" data-bs-target="#homeHeroCarousel" data-bs-slide="next">
+                    <span class="custom-control-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            {% endif %}
+
+            <!-- Play/Pause Button -->
+            <button class="carousel-play-pause-btn" type="button" id="carouselPlayPauseBtn" aria-label="Pause slideshow">
+                <span class="play-pause-icon">
+                    <svg class="icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    <svg class="icon-play d-none" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+                </span>
+            </button>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Hi, {{ request.user.first_name|default:request.user.username }}</h1>
+        <p class="text-muted mb-0">Upload waste images and get instant ML classification results.</p>
+    </div>
+    <div class="points-box text-md-end">
+        <span class="text-muted d-block">Total points</span>
+        <strong class="fs-3">{{ total_points }}</strong>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Upload Waste</h2>
+                <form method="post" enctype="multipart/form-data" id="wasteUploadForm">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button class="btn btn-success w-100" type="submit" id="uploadWasteButton">Upload Waste</button>
+                    <button class="camera-scan-button w-100" type="button" id="scanCameraButton">Scan Using Camera</button>
+                    <input class="camera-native-input" id="cameraCaptureInput" type="file" accept="image/*" capture="environment" aria-hidden="true" tabindex="-1">
+
+                    <div class="camera-preview-card d-none" id="cameraPreviewCard">
+                        <span>Selected image preview</span>
+                        <img id="cameraCapturedPreview" alt="Captured waste preview">
+                    </div>
+                </form>
+                <a class="btn btn-outline-success w-100 mt-3" href="{% url 'friend_submission' %}">Scan for Friend</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5 mb-3">Submission History</h2>
+                {% include "core/submission_table.html" with submissions=submissions %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ai-scanner-modal d-none" id="aiScannerModal" role="dialog" aria-modal="true" aria-labelledby="smartScannerTitle">
+    <div class="ai-scanner-shell">
+        <div class="ai-scanner-header">
+            <div>
+                <h2 id="smartScannerTitle">Smart Waste Scanner</h2>
+                <p>Choose a camera and place the waste item in view.</p>
+            </div>
+            <button type="button" id="scannerCloseButton" aria-label="Close scanner">Close</button>
+        </div>
+        <div class="camera-switcher" aria-label="Camera selection">
+            <button class="is-active" type="button" id="backCameraButton">Back Camera</button>
+            <button type="button" id="frontCameraButton">Front Camera</button>
+        </div>
+        <div class="ai-scanner-frame">
+            <video id="cameraVideo" autoplay playsinline muted></video>
+            <img class="d-none" id="scannerFrozenPreview" alt="Captured waste scan">
+            <canvas id="cameraCanvas" class="d-none"></canvas>
+            <div class="ai-scanner-reticle" aria-hidden="true">
+                <span></span><span></span><span></span><span></span>
+            </div>
+            <div class="ai-scanner-sweep" aria-hidden="true"></div>
+        </div>
+        <p class="ai-scanner-hint" id="scannerHint">Align waste item inside frame</p>
+        <div class="ai-scanner-actions">
+            <button class="btn btn-success" type="button" id="capturePhotoButton">Capture</button>
+            <button class="btn btn-outline-light d-none" type="button" id="retakePhotoButton">Retake</button>
+            <button class="btn btn-light d-none" type="button" id="usePhotoButton">Use Photo</button>
+            <button class="btn btn-outline-light" type="button" id="cancelScannerButton">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div class="ai-analysis-overlay d-none" id="aiAnalysisOverlay" aria-live="polite">
+    <div>
+        <span class="ai-analysis-spinner"></span>
+        <strong>Analyzing waste...</strong>
+        <p>Please wait while the image is classified.</p>
+    </div>
+</div>
+
+{% if ai_result %}
+<div class="ai-result-toast {% if ai_result.status == 'Duplicate Submission' %}ai-result-toast--rejected{% else %}ai-result-toast--{{ ai_result.status|lower }} ai-result-toast--{{ ai_result.category_class }}{% endif %}" id="aiResultToast">
+    {% if ai_result.status == "Approved" %}
+        <strong>{{ ai_result.category }} Detected</strong>
+        <p>+{{ ai_result.points }} Points</p>
+    {% elif ai_result.status == "Duplicate Submission" %}
+        <strong>Duplicate Submission Detected</strong>
+        <p>No additional points awarded.</p>
+    {% else %}
+        <strong>Invalid Image</strong>
+        <p>+{{ ai_result.points }} Points</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const carouselElement = document.getElementById("homeHeroCarousel");
+    const playPauseBtn = document.getElementById("carouselPlayPauseBtn");
+    const uploadForm = document.getElementById("wasteUploadForm");
+    const scanButton = document.getElementById("scanCameraButton");
+    const cameraInput = document.getElementById("cameraCaptureInput");
+    const imageInput = document.getElementById("id_image");
+    const previewCard = document.getElementById("cameraPreviewCard");
+    const previewImage = document.getElementById("cameraCapturedPreview");
+    const scannerModal = document.getElementById("aiScannerModal");
+    const cameraVideo = document.getElementById("cameraVideo");
+    const cameraCanvas = document.getElementById("cameraCanvas");
+    const scannerFrozenPreview = document.getElementById("scannerFrozenPreview");
+    const scannerHint = document.getElementById("scannerHint");
+    const captureButton = document.getElementById("capturePhotoButton");
+    const retakeButton = document.getElementById("retakePhotoButton");
+    const usePhotoButton = document.getElementById("usePhotoButton");
+    const cancelButton = document.getElementById("cancelScannerButton");
+    const closeButton = document.getElementById("scannerCloseButton");
+    const backCameraButton = document.getElementById("backCameraButton");
+    const frontCameraButton = document.getElementById("frontCameraButton");
+    const analysisOverlay = document.getElementById("aiAnalysisOverlay");
+    let activeStream = null;
+    let capturedFile = null;
+    let currentFacingMode = "environment";
+
+    if (carouselElement && window.bootstrap) {
+        const carousel = bootstrap.Carousel.getOrCreateInstance(carouselElement, {
+            interval: 5000,
+            ride: "carousel",
+            pause: "hover"
+        });
+
+        let isPaused = false;
+
+        playPauseBtn?.addEventListener("click", () => {
+            const pauseIcon = playPauseBtn.querySelector(".icon-pause");
+            const playIcon = playPauseBtn.querySelector(".icon-play");
+            
+            if (isPaused) {
+                carousel.cycle();
+                playPauseBtn.setAttribute("aria-label", "Pause slideshow");
+                pauseIcon?.classList.remove("d-none");
+                playIcon?.classList.add("d-none");
+                isPaused = false;
+            } else {
+                carousel.pause();
+                playPauseBtn.setAttribute("aria-label", "Play slideshow");
+                pauseIcon?.classList.add("d-none");
+                playIcon?.classList.remove("d-none");
+                isPaused = true;
+            }
+        });
+    }
+
+    if (!scanButton || !cameraInput || !imageInput) {
+        return;
+    }
+
+    const showPreview = (file) => {
+        if (!file) {
+            return;
+        }
+        previewImage.src = URL.createObjectURL(file);
+        previewCard.classList.remove("d-none");
+    };
+
+    const setUploadFile = (file) => {
+        if (window.DataTransfer) {
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            imageInput.files = transfer.files;
+            imageInput.setAttribute("name", "image");
+            cameraInput.removeAttribute("name");
+        } else if (cameraInput.files && cameraInput.files[0] === file) {
+            cameraInput.setAttribute("name", "image");
+            imageInput.removeAttribute("name");
+        } else {
+            scannerHint.textContent = "This browser cannot attach the captured photo. Please use the file picker.";
+            return;
+        }
+        showPreview(file);
+    };
+
+    const stopCamera = () => {
+        if (activeStream) {
+            activeStream.getTracks().forEach((track) => track.stop());
+            activeStream = null;
+        }
+        cameraVideo.srcObject = null;
+    };
+
+    const resetScannerCapture = () => {
+        capturedFile = null;
+        scannerFrozenPreview.src = "";
+        scannerFrozenPreview.classList.add("d-none");
+        cameraVideo.classList.remove("d-none");
+        captureButton.classList.remove("d-none");
+        retakeButton.classList.add("d-none");
+        usePhotoButton.classList.add("d-none");
+        scannerHint.textContent = "Align waste item inside frame";
+    };
+
+    const closeScanner = () => {
+        stopCamera();
+        scannerModal.classList.add("d-none");
+        document.body.classList.remove("scanner-open");
+        resetScannerCapture();
+    };
+
+    const openNativeCamera = () => {
+        scannerModal.classList.remove("d-none");
+        document.body.classList.add("scanner-open");
+        scannerHint.textContent = "Opening your camera...";
+        cameraInput.value = "";
+        cameraInput.click();
+    };
+
+    const setCameraSwitcherState = () => {
+        backCameraButton.classList.toggle("is-active", currentFacingMode === "environment");
+        frontCameraButton.classList.toggle("is-active", currentFacingMode === "user");
+    };
+
+    const openCamera = async (facingMode = currentFacingMode) => {
+        currentFacingMode = facingMode;
+        setCameraSwitcherState();
+        scannerModal.classList.remove("d-none");
+        document.body.classList.add("scanner-open");
+        resetScannerCapture();
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            openNativeCamera();
+            return;
+        }
+        try {
+            stopCamera();
+            activeStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: currentFacingMode } },
+                audio: false,
+            });
+            cameraVideo.srcObject = activeStream;
+            await cameraVideo.play();
+        } catch (error) {
+            openNativeCamera();
+        }
+    };
+
+    scanButton.addEventListener("click", () => {
+        openCamera("environment");
+    });
+
+    backCameraButton.addEventListener("click", () => openCamera("environment"));
+    frontCameraButton.addEventListener("click", () => openCamera("user"));
+
+    cameraInput.addEventListener("change", () => {
+        if (cameraInput.files && cameraInput.files[0]) {
+            capturedFile = cameraInput.files[0];
+            scannerFrozenPreview.src = URL.createObjectURL(capturedFile);
+            scannerFrozenPreview.classList.remove("d-none");
+            cameraVideo.classList.add("d-none");
+            captureButton.classList.add("d-none");
+            retakeButton.classList.remove("d-none");
+            usePhotoButton.classList.remove("d-none");
+            scannerHint.textContent = "Preview captured image before upload";
+        }
+    });
+
+    imageInput.addEventListener("change", () => {
+        if (imageInput.files && imageInput.files[0]) {
+            imageInput.setAttribute("name", "image");
+            cameraInput.removeAttribute("name");
+            showPreview(imageInput.files[0]);
+        }
+    });
+
+    captureButton.addEventListener("click", () => {
+        const width = cameraVideo.videoWidth;
+        const height = cameraVideo.videoHeight;
+        if (!width || !height) {
+            return;
+        }
+        cameraCanvas.width = width;
+        cameraCanvas.height = height;
+        cameraCanvas.getContext("2d").drawImage(cameraVideo, 0, 0, width, height);
+        cameraCanvas.toBlob((blob) => {
+            if (!blob) {
+                return;
+            }
+            const file = new File([blob], `camera-scan-${Date.now()}.jpg`, {
+                type: "image/jpeg",
+            });
+            capturedFile = file;
+            scannerFrozenPreview.src = URL.createObjectURL(file);
+            scannerFrozenPreview.classList.remove("d-none");
+            cameraVideo.classList.add("d-none");
+            captureButton.classList.add("d-none");
+            retakeButton.classList.remove("d-none");
+            usePhotoButton.classList.remove("d-none");
+            scannerHint.textContent = "Preview captured image before upload";
+            stopCamera();
+        }, "image/jpeg", 0.92);
+    });
+
+    retakeButton.addEventListener("click", () => {
+        resetScannerCapture();
+        openCamera(currentFacingMode);
+    });
+
+    usePhotoButton.addEventListener("click", () => {
+        if (capturedFile) {
+            setUploadFile(capturedFile);
+        }
+        closeScanner();
+    });
+
+    cancelButton.addEventListener("click", closeScanner);
+    closeButton.addEventListener("click", closeScanner);
+
+    uploadForm.addEventListener("submit", () => {
+        analysisOverlay.classList.remove("d-none");
+    });
+
+});
+</script>
+{% endblock %}

@@ -1,0 +1,316 @@
+{% extends "core/base.html" %}
+{% load tz %}
+{% block title %}Citizen Eco Profile | Smart Waste{% endblock %}
+{% block content %}
+<section class="citizen-profile{% if edit_mode %} citizen-profile--editing{% endif %}">
+    <header class="citizen-hero">
+        <div>
+            <span class="citizen-kicker">Citizen Eco Profile Dashboard</span>
+            <h1>{{ full_name }}</h1>
+            <div class="citizen-meta">
+                <span>Username: {{ request.user.username }}</span>
+                <span>Badge Level: {{ profile_data.badge_name }}</span>
+                <span>Member Since: {{ member_since|date:"M Y" }}</span>
+            </div>
+        </div>
+        <div class="citizen-points">
+            <span>Total Points</span>
+            <strong>{{ total_points }}</strong>
+        </div>
+    </header>
+
+    <div class="citizen-grid">
+        <div class="citizen-main">
+            {% if profile_data.completion_percentage < 100 %}
+                <article class="citizen-card">
+                    <div class="citizen-card__heading">
+                        <h2>Profile Completion</h2>
+                        <strong>{{ profile_data.completion_percentage }}%</strong>
+                    </div>
+                    <div class="citizen-progress" aria-label="Profile completion">
+                        <span style="--completion: {{ profile_data.completion_percentage }}%;"></span>
+                    </div>
+                    <p>Complete your contact and address details to strengthen your citizen eco profile.</p>
+                </article>
+            {% endif %}
+
+            {% if not edit_mode %}
+                <article class="citizen-card">
+                    <div class="citizen-card__heading">
+                        <h2>Personal Information</h2>
+                        <a class="citizen-edit-link" href="{% url 'profile' %}?edit=1">Edit Profile</a>
+                    </div>
+                    <div class="citizen-info-grid">
+                        <div>
+                            <span>Full Name</span>
+                            <strong>{{ full_name }}</strong>
+                        </div>
+                        <div class="citizen-info-readonly">
+                            <span>Username</span>
+                            <strong>{{ request.user.username }}</strong>
+                        </div>
+                        <div class="citizen-info-readonly">
+                            <span>Email Address</span>
+                            <strong>{{ request.user.email|default:"Not added" }}</strong>
+                        </div>
+                        <div>
+                            <span>Mobile Number</span>
+                            <strong>{{ profile_data.mobile_number|default:"Not added" }}</strong>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="citizen-card">
+                    <div class="citizen-card__heading">
+                        <h2>Address Information</h2>
+                    </div>
+                    <div class="citizen-info-grid citizen-info-grid--address">
+                        <div>
+                            <span>Door Number</span>
+                            <strong>{{ profile_data.door_number|default:"Not added" }}</strong>
+                        </div>
+                        <div>
+                            <span>Area / Locality</span>
+                            <strong>{{ profile_data.area_locality|default:"Not added" }}</strong>
+                        </div>
+                        <div>
+                            <span>Urban / Rural</span>
+                            <strong>{{ profile_data.area_type|default:"Not added" }}</strong>
+                        </div>
+                        <div>
+                            <span>District</span>
+                            <strong>{{ profile_data.district|default:"Not added" }}</strong>
+                        </div>
+                        <div>
+                            <span>Ward Number</span>
+                            <strong>{{ profile_data.ward_number|default:"Not added" }}</strong>
+                        </div>
+                        <div>
+                            <span>Pincode</span>
+                            <strong>{{ profile_data.pincode|default:"Not added" }}</strong>
+                        </div>
+                    </div>
+                </article>
+            {% else %}
+                <form method="post" class="citizen-form-stack citizen-edit-mode">
+                    {% csrf_token %}
+                    <article class="citizen-card">
+                        <div class="citizen-card__heading">
+                            <h2>Edit Profile</h2>
+                        </div>
+                        <div class="citizen-form-grid">
+                            <div>
+                                <label for="{{ profile_form.full_name.id_for_label }}">Full Name</label>
+                                {{ profile_form.full_name }}
+                                {{ profile_form.full_name.errors }}
+                            </div>
+                            <div>
+                                <label for="{{ profile_form.mobile_number.id_for_label }}">Mobile Number</label>
+                                {{ profile_form.mobile_number }}
+                                {{ profile_form.mobile_number.errors }}
+                            </div>
+                        </div>
+                        <div class="citizen-fixed-identity">
+                            <div>
+                                <span>Username</span>
+                                <strong>{{ request.user.username }}</strong>
+                            </div>
+                            <div>
+                                <span>Email Address</span>
+                                <strong>{{ request.user.email|default:"Not added" }}</strong>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="citizen-card">
+                        <div class="citizen-card__heading">
+                            <h2>Edit Address Information</h2>
+                        </div>
+                        <div class="citizen-form-grid citizen-form-grid--address">
+                            <div>
+                                <label for="{{ profile_form.door_number.id_for_label }}">Door Number</label>
+                                {{ profile_form.door_number }}
+                                {{ profile_form.door_number.errors }}
+                            </div>
+                            <div>
+                                <label for="{{ profile_form.area_locality.id_for_label }}">Area / Locality</label>
+                                {{ profile_form.area_locality }}
+                                {{ profile_form.area_locality.errors }}
+                            </div>
+                            <div>
+                                <label for="{{ profile_form.area_type.id_for_label }}">Urban / Rural</label>
+                                {{ profile_form.area_type }}
+                                {{ profile_form.area_type.errors }}
+                            </div>
+                            <div>
+                                <label for="{{ profile_form.district.id_for_label }}">District</label>
+                                {{ profile_form.district }}
+                                {{ profile_form.district.errors }}
+                            </div>
+                            <div>
+                                <label for="{{ profile_form.ward_number.id_for_label }}">Ward Number</label>
+                                {{ profile_form.ward_number }}
+                                {{ profile_form.ward_number.errors }}
+                            </div>
+                            <div>
+                                <label for="{{ profile_form.pincode.id_for_label }}">Pincode</label>
+                                {{ profile_form.pincode }}
+                                {{ profile_form.pincode.errors }}
+                            </div>
+                        </div>
+                        <div class="alert alert-info d-flex align-items-center mt-3" style="border-radius: 10px; font-size: 0.85rem; padding: 0.75rem 1rem; border-color: #cbd5e1; background-color: #f8fafc; color: #475569;">
+                            <svg class="flex-shrink-0 me-2" width="16" height="16" style="color: #059669;"><use href="#eco-shield"></use></svg>
+                            <div>
+                                Note: Address fields can only be filled once. Once a field is saved, it cannot be edited again.
+                            </div>
+                        </div>
+                        <div class="citizen-form-actions">
+                            <button class="citizen-primary-button" name="update_profile" type="submit">Save Changes</button>
+                            <a class="citizen-cancel-button" href="{% url 'profile' %}">Cancel</a>
+                        </div>
+                    </article>
+                </form>
+            {% endif %}
+
+            <article class="citizen-card">
+                <div class="citizen-card__heading">
+                    <h2>Submission History</h2>
+                </div>
+                <div class="activity-timeline" id="historyList">
+                    {% for submission in submissions %}
+                        <div class="activity-item" data-index="{{ forloop.counter0 }}">
+                            <span style="background: {% if submission.status == 'Approved' %}#16a34a{% elif submission.status == 'Pending' %}#f59e0b{% else %}#dc2626{% endif %};"></span>
+                            <div>
+                                <strong>{{ submission.waste_category|default:"Classified Waste" }}</strong>
+                                <p>
+                                    Status: <strong style="color: {% if submission.status == 'Approved' %}#15803d{% elif submission.status == 'Pending' %}#d97706{% else %}#b91c1c{% endif %};">{{ submission.status }}</strong>
+                                    {% if submission.status == "Approved" %}
+                                        ({{ submission.points }} points earned)
+                                    {% endif %}
+                                    {% if submission.friend %}
+                                        for friend: {{ submission.friend.name }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <time>{{ submission.timestamp|localtime|date:"d M Y, g:i A" }}</time>
+                        </div>
+                    {% empty %}
+                        <p class="citizen-muted">No submission history found.</p>
+                    {% endfor %}
+                </div>
+                
+                {% if submissions %}
+                <div class="history-pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; gap: 1rem;">
+                    <button type="button" class="btn btn-outline-success btn-sm" id="prevHistoryBtn" style="border-radius: 10px !important;">Previous</button>
+                    <span class="text-muted" id="historyPageIndicator" style="font-size: 0.9rem; font-weight: 500;">Page 1 of 1</span>
+                    <button type="button" class="btn btn-outline-success btn-sm" id="nextHistoryBtn" style="border-radius: 10px !important;">Next</button>
+                </div>
+                {% endif %}
+            </article>
+        </div>
+
+        <aside class="citizen-sidebar">
+            <article class="citizen-card eco-identity-card">
+                <div class="citizen-card__heading">
+                    <h2>Eco Identity</h2>
+                </div>
+                <dl>
+                    <div>
+                        <dt>Badge Name</dt>
+                        <dd>{{ profile_data.badge_name }}</dd>
+                    </div>
+                    <div>
+                        <dt>Total Points</dt>
+                        <dd>{{ total_points }}</dd>
+                    </div>
+                    <div>
+                        <dt>Member Since</dt>
+                        <dd>{{ member_since|date:"F Y" }}</dd>
+                    </div>
+                    <div>
+                        <dt>Preferred Waste Category</dt>
+                        <dd>{{ profile_data.preferred_waste_category|default:"Not selected" }}</dd>
+                    </div>
+                </dl>
+            </article>
+
+            <article class="citizen-card qr-card">
+                <div class="citizen-card__heading">
+                    <h2>Citizen Eco ID</h2>
+                </div>
+                <img src="{{ qr_data_uri }}" alt="Citizen Eco ID QR code">
+                <p>Scan to verify citizen identity, eco badge, and points.</p>
+                <a class="citizen-secondary-button" href="{% url 'eco_id_qr_download' %}">Download QR</a>
+            </article>
+
+            <article class="citizen-card security-card">
+                <div class="citizen-card__heading">
+                    <h2>Account Security</h2>
+                </div>
+                <details>
+                    <summary>Update Password</summary>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ password_form.as_p }}
+                        <button class="citizen-primary-button" name="change_password" type="submit">Update Password</button>
+                    </form>
+                </details>
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <button class="citizen-danger-button" type="submit">Logout</button>
+                </form>
+            </article>
+        </aside>
+    </div>
+</section>
+
+{% if submissions %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const items = document.querySelectorAll("#historyList .activity-item");
+    const prevBtn = document.getElementById("prevHistoryBtn");
+    const nextBtn = document.getElementById("nextHistoryBtn");
+    const indicator = document.getElementById("historyPageIndicator");
+    
+    const itemsPerPage = 5;
+    let currentPage = 1;
+    const totalPages = Math.ceil(items.length / itemsPerPage);
+    
+    function showPage(page) {
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+        currentPage = page;
+        
+        items.forEach((item, idx) => {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            if (idx >= start && idx < end) {
+                item.style.display = "";
+            } else {
+                item.style.display = "none";
+            }
+        });
+        
+        indicator.textContent = `Page ${currentPage} of ${totalPages}`;
+        
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+    }
+    
+    prevBtn.addEventListener("click", () => {
+        if (currentPage > 1) {
+            showPage(currentPage - 1);
+        }
+    });
+    
+    nextBtn.addEventListener("click", () => {
+        if (currentPage < totalPages) {
+            showPage(currentPage + 1);
+        }
+    });
+    
+    showPage(1);
+});
+</script>
+{% endif %}
+{% endblock %}

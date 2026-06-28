@@ -1,0 +1,583 @@
+{% extends "core/base.html" %}
+{% load tz %}
+{% block title %}Leaderboard | Smart Waste{% endblock %}
+{% block content %}
+<section class="rewards-dashboard leaderboard-dashboard">
+    <!-- 1. Hero Header -->
+    <header class="rewards-hero">
+        <div>
+            <span class="rewards-kicker">ECO LEADERBOARD</span>
+            <h1>Citizen Leaderboard</h1>
+            <p>Recognizing citizens making Andhra Pradesh cleaner and greener.</p>
+        </div>
+        <div class="rewards-hero__stats">
+            <div>
+                <span>Your Rank</span>
+                <strong>#{{ current_rank|default:"-" }}</strong>
+            </div>
+            <div>
+                <span>Total Points</span>
+                <strong>{{ current_user_points }}</strong>
+            </div>
+        </div>
+    </header>
+
+    {% if rows %}
+    <!-- 2. Top 3 Podium Section -->
+    <div class="podium-container">
+        <!-- Rank 2 Pedestal (Second Place) -->
+        {% if top_3|length > 1 %}
+        <div class="podium-step step-second">
+            <div class="podium-avatar-wrap">
+                <div class="podium-avatar rank-2-avatar">
+                    {{ top_3.1.user.username|slice:":2"|upper }}
+                </div>
+                <span class="podium-rank-badge rank-2-badge">2</span>
+            </div>
+            <div class="podium-user-info">
+                <h3 class="podium-username">{{ top_3.1.user.username }}</h3>
+                <span class="podium-badge-label">{{ top_3.1.badge }}</span>
+            </div>
+            <div class="podium-pedestal">
+                <div class="podium-points"><strong>{{ top_3.1.points }}</strong> pts</div>
+                <div class="podium-number">2</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Rank 1 Pedestal (First Place) -->
+        {% if top_3|length > 0 %}
+        <div class="podium-step step-first">
+            <div class="podium-avatar-wrap">
+                <div class="podium-avatar rank-1-avatar">
+                    {{ top_3.0.user.username|slice:":2"|upper }}
+                </div>
+                <span class="podium-rank-badge rank-1-badge">👑</span>
+            </div>
+            <div class="podium-user-info">
+                <h3 class="podium-username">{{ top_3.0.user.username }}</h3>
+                <span class="podium-badge-label">{{ top_3.0.badge }}</span>
+            </div>
+            <div class="podium-pedestal">
+                <div class="podium-points"><strong>{{ top_3.0.points }}</strong> pts</div>
+                <div class="podium-number">1</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Rank 3 Pedestal (Third Place) -->
+        {% if top_3|length > 2 %}
+        <div class="podium-step step-third">
+            <div class="podium-avatar-wrap">
+                <div class="podium-avatar rank-3-avatar">
+                    {{ top_3.2.user.username|slice:":2"|upper }}
+                </div>
+                <span class="podium-rank-badge rank-3-badge">3</span>
+            </div>
+            <div class="podium-user-info">
+                <h3 class="podium-username">{{ top_3.2.user.username }}</h3>
+                <span class="podium-badge-label">{{ top_3.2.badge }}</span>
+            </div>
+            <div class="podium-pedestal">
+                <div class="podium-points"><strong>{{ top_3.2.points }}</strong> pts</div>
+                <div class="podium-number">3</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 4. User Rank Summary Card -->
+    <article class="reward-card reward-progress-card mb-4" style="margin-top:20px;">
+        <div class="reward-card__heading">
+            <div>
+                <span>Your Ranking Info</span>
+                {% if next_badge %}
+                    <h2>{{ current_badge.name }} to {{ next_badge.name }}</h2>
+                {% else %}
+                    <h2>{{ current_badge.name }}</h2>
+                {% endif %}
+            </div>
+            <strong>#{{ current_rank }}</strong>
+        </div>
+        <div class="reward-progress">
+            <span style="--reward-progress: {{ progress_percent }}%;"></span>
+        </div>
+        {% if next_badge %}
+            <p>{{ current_user_points }} / {{ next_badge.threshold }} Points for next badge. Rank Goal: #{{ current_rank|add:"-1"|default:"1" }}</p>
+        {% else %}
+            <p>{{ current_user_points }} Points. Top badge reached! Keep it up!</p>
+        {% endif %}
+    </article>
+
+    <!-- 5. Leaderboard Insights -->
+    <section class="reward-stat-grid" style="margin-bottom: 2rem;">
+        <article class="reward-card reward-mini-stat">
+            <div class="reward-mini-stat__icon">
+                <svg><use href="#eco-upload"></use></svg>
+            </div>
+            <span>Total Waste Uploads</span>
+            <strong>{{ total_waste_uploads }}</strong>
+        </article>
+        <article class="reward-card reward-mini-stat">
+            <div class="reward-mini-stat__icon">
+                <svg><use href="#eco-star"></use></svg>
+            </div>
+            <span>Highest Points</span>
+            <strong>{{ highest_points }}</strong>
+        </article>
+        <article class="reward-card reward-mini-stat">
+            <div class="reward-mini-stat__icon">
+                <svg><use href="#eco-chart"></use></svg>
+            </div>
+            <span>Avg Citizen Score</span>
+            <strong>{{ average_citizen_score }}</strong>
+        </article>
+    </section>
+
+    <!-- 6. Achievement Highlights -->
+    <section class="reward-card" style="margin-bottom: 2rem;">
+        <div class="reward-card__heading">
+            <h2>Achievement Highlights</h2>
+        </div>
+        <div class="achievement-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;">
+            {% if top_3|length > 0 %}
+            <article class="achievement-card is-unlocked">
+                <div class="achievement-card__icon">
+                    <svg><use href="#eco-star"></use></svg>
+                </div>
+                <span>Highest Contributor</span>
+                <strong>{{ top_3.0.user.username }}</strong>
+            </article>
+            {% endif %}
+            {% if top_3|length > 1 %}
+            <article class="achievement-card is-unlocked">
+                <div class="achievement-card__icon">
+                    <svg><use href="#eco-shield"></use></svg>
+                </div>
+                <span>Fastest Rising Citizen</span>
+                <strong>{{ top_3.1.user.username }}</strong>
+            </article>
+            {% endif %}
+            {% if top_3|length > 2 %}
+            <article class="achievement-card is-unlocked">
+                <div class="achievement-card__icon">
+                    <svg><use href="#eco-sprout"></use></svg>
+                </div>
+                <span>Most Improved Citizen</span>
+                <strong>{{ top_3.2.user.username }}</strong>
+            </article>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- 3. Leaderboard Table -->
+    <section class="reward-card">
+        <div class="reward-card__heading" style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+            <h2 style="margin: 0;">Top 10 Rankings</h2>
+        </div>
+        
+        <div class="table-responsive" style="margin-top: 1rem;">
+            <table class="table table-hover align-middle custom-leaderboard-table" id="leaderTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)" style="cursor:pointer;">Rank ⇕</th>
+                        <th onclick="sortTable(1)" style="cursor:pointer;">Citizen Name ⇕</th>
+                        <th class="d-none d-sm-table-cell" onclick="sortTable(2)" style="cursor:pointer;">Badge Level ⇕</th>
+                        <th class="d-none d-md-table-cell">Waste Preference</th>
+                        <th onclick="sortTable(4)" style="cursor:pointer;">Points ⇕</th>
+                        <th class="d-none d-lg-table-cell" onclick="sortTable(5)" style="cursor:pointer;">Member Since ⇕</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr class="{% if row.user.pk == request.user.pk %}is-current-user{% endif %}">
+                            <td><strong>#{{ row.rank }}</strong></td>
+                            <td class="user-cell">
+                                {{ row.user.username }}
+                                {% if row.user.pk == request.user.pk %}
+                                <span class="badge bg-success ms-2 rounded-pill">You</span>
+                                {% endif %}
+                            </td>
+                            <td class="d-none d-sm-table-cell">{{ row.badge }}</td>
+                            <td class="d-none d-md-table-cell">{{ row.waste_pref }}</td>
+                            <td><strong>{{ row.points }}</strong></td>
+                            <td class="text-muted d-none d-lg-table-cell">{{ row.user.date_joined|date:"M Y" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {% else %}
+    <!-- 7. Empty State -->
+    <div class="reward-card empty-state text-center py-5">
+        <svg class="mb-3" width="64" height="64" style="color:#9ca3af"><use href="#eco-leaf"></use></svg>
+        <h3>No rankings available yet.</h3>
+        <p class="text-muted">Be the first citizen to contribute and start your eco journey.</p>
+        <a href="{% url 'home' %}" class="btn btn-success mt-3">Upload Waste</a>
+    </div>
+    {% endif %}
+
+</section>
+
+<style>
+/* Grid shrink fixes */
+.rewards-dashboard > * {
+    min-width: 0;
+}
+.custom-leaderboard-table {
+    min-width: auto !important;
+}
+
+/* Leaderboard visual podium styling */
+.podium-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 1.5rem;
+    margin: 2.5rem 0;
+    padding-top: 1rem;
+    min-height: 320px;
+}
+
+.podium-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 32%;
+    max-width: 220px;
+    transition: all 0.3s ease;
+}
+
+/* Pedestals */
+.podium-pedestal {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 10px 25px rgba(24, 54, 38, 0.06);
+    position: relative;
+    overflow: hidden;
+    padding-top: 1.25rem;
+}
+
+.step-first {
+    order: 2;
+    z-index: 3;
+}
+.step-first .podium-pedestal {
+    height: 160px;
+    background: linear-gradient(185deg, #fef08a 0%, #eab308 100%);
+    border: 2px solid #facc15;
+}
+.step-second {
+    order: 1;
+    z-index: 2;
+}
+.step-second .podium-pedestal {
+    height: 120px;
+    background: linear-gradient(185deg, #f1f5f9 0%, #cbd5e1 100%);
+    border: 2px solid #e2e8f0;
+}
+.step-third {
+    order: 3;
+    z-index: 1;
+}
+.step-third .podium-pedestal {
+    height: 95px;
+    background: linear-gradient(185deg, #ffedd5 0%, #d97706 100%);
+    border: 2px solid #fed7aa;
+}
+
+/* Avatar and Badges */
+.podium-avatar-wrap {
+    position: relative;
+    margin-bottom: 0.75rem;
+}
+
+.podium-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: #fff;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    background: #14532d;
+    border: 3px solid #fff;
+}
+.rank-1-avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 1.45rem;
+    border-color: #facc15;
+    background: linear-gradient(135deg, #15803d, #16a34a);
+}
+.rank-2-avatar {
+    border-color: #e2e8f0;
+    background: linear-gradient(135deg, #334155, #475569);
+}
+.rank-3-avatar {
+    border-color: #fed7aa;
+    background: linear-gradient(135deg, #9a3412, #c2410c);
+}
+
+.podium-rank-badge {
+    position: absolute;
+    bottom: -5px;
+    right: 50%;
+    transform: translateX(50%);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: #fff;
+    border: 2px solid #fff;
+}
+.rank-1-badge {
+    background: #eab308;
+    font-size: 0.95rem;
+    width: 30px;
+    height: 30px;
+    bottom: -8px;
+}
+.rank-2-badge {
+    background: #64748b;
+}
+.rank-3-badge {
+    background: #b45309;
+}
+
+/* Text info */
+.podium-user-info {
+    text-align: center;
+    margin-bottom: 0.75rem;
+    width: 100%;
+}
+.podium-username {
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin: 0;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.step-first .podium-username {
+    font-size: 1.1rem;
+}
+.podium-badge-label {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.podium-pedestal .podium-points {
+    color: rgba(0,0,0,0.65);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.podium-pedestal .podium-points strong {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #000;
+}
+.podium-pedestal .podium-number {
+    position: absolute;
+    bottom: 0;
+    font-size: 3rem;
+    font-weight: 900;
+    color: rgba(255, 255, 255, 0.38);
+    line-height: 0.85;
+}
+
+.is-current-user {
+    background-color: #f0fdf4 !important;
+}
+.is-current-user td {
+    background-color: transparent !important;
+}
+.custom-leaderboard-table th {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 10;
+    color: var(--eco-zinc-500);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--eco-zinc-200);
+}
+.custom-leaderboard-table td {
+    padding: 1rem 0.5rem;
+    color: var(--eco-zinc-700);
+    border-bottom: 1px solid var(--eco-zinc-100);
+}
+.custom-leaderboard-table tr:hover td {
+    background-color: #f8fafc;
+}
+
+/* Animations */
+.reward-card, .custom-leaderboard-table tr, .achievement-card {
+    transition: all 0.2s ease-in-out;
+}
+.reward-card:hover, .achievement-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+@media (min-width: 992px) {
+    .leaderboard-dashboard .reward-stat-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+}
+
+/* Custom Mobile Optimizations */
+@media (max-width: 768px) {
+    .rewards-hero__stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Prevent page overflow and clip issues */
+    .leaderboard-dashboard {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden;
+    }
+    
+    .table-responsive {
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        width: 100% !important;
+    }
+    
+
+    
+    /* Responsive Podium Scaling */
+    .podium-container {
+        gap: 0.5rem;
+        min-height: 240px;
+        margin: 1.5rem 0;
+        padding-top: 0.5rem;
+    }
+    
+    .podium-avatar {
+        width: 44px;
+        height: 44px;
+        font-size: 0.85rem;
+        border-width: 2px;
+    }
+    
+    .rank-1-avatar {
+        width: 56px;
+        height: 56px;
+        font-size: 1.1rem;
+    }
+    
+    .podium-username {
+        font-size: 0.75rem;
+    }
+    
+    .step-first .podium-username {
+        font-size: 0.85rem;
+    }
+    
+    .podium-badge-label {
+        font-size: 0.6rem;
+    }
+    
+    .step-first .podium-pedestal {
+        height: 110px;
+    }
+    
+    .step-second .podium-pedestal {
+        height: 85px;
+    }
+    
+    .step-third .podium-pedestal {
+        height: 65px;
+    }
+    
+    .podium-pedestal .podium-points {
+        font-size: 0.7rem;
+    }
+    
+    .podium-pedestal .podium-points strong {
+        font-size: 0.9rem;
+    }
+    
+    .podium-pedestal .podium-number {
+        font-size: 1.8rem;
+    }
+}
+</style>
+
+<script>
+function sortTable(n) {
+    const table = document.getElementById("leaderTable");
+    let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    switching = true;
+    dir = "asc"; 
+    while (switching) {
+        switching = false;
+        rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+        for (i = 0; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("td")[n];
+            y = rows[i + 1].getElementsByTagName("td")[n];
+            
+            let valX = x.innerHTML.replace(/(<([^>]+)>)/gi, "").trim();
+            let valY = y.innerHTML.replace(/(<([^>]+)>)/gi, "").trim();
+            
+            if (!isNaN(parseInt(valX.replace(/[^0-9]/g, ''))) && !isNaN(parseInt(valY.replace(/[^0-9]/g, '')))) {
+                valX = parseInt(valX.replace(/[^0-9]/g, ''));
+                valY = parseInt(valY.replace(/[^0-9]/g, ''));
+            } else {
+                valX = valX.toLowerCase();
+                valY = valY.toLowerCase();
+            }
+
+            if (dir == "asc") {
+                if (valX > valY) {
+                    shouldSwitch = true;
+                    break;
+                }
+            } else if (dir == "desc") {
+                if (valX < valY) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+        }
+        if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            switchcount ++; 
+        } else {
+            if (switchcount == 0 && dir == "asc") {
+                dir = "desc";
+                switching = true;
+            }
+        }
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Top 10 leaderboard has search and pagination removed as requested
+});
+</script>
+{% endblock %}
