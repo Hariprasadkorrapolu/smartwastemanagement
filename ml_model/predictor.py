@@ -2,8 +2,13 @@ from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
+
 from django.conf import settings
 from PIL import Image, UnidentifiedImageError
+import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class PredictionError(Exception):
@@ -76,7 +81,9 @@ def predict_waste(image_path):
     except PredictionError:
         raise
     except Exception as exc:
-        raise PredictionError("ML model prediction failed.") from exc
+    logger.exception("TensorFlow prediction failed")
+    traceback.print_exc()
+    raise PredictionError(str(exc)) from exc
 
     scores = np.asarray(predictions)[0]
     predicted_index = int(np.argmax(scores))
