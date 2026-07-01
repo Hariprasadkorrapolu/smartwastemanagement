@@ -10,10 +10,10 @@ def points_for_category(category):
     return settings.ML_CATEGORY_POINTS.get(category, 0)
 
 
-def classify_submission(submission):
+def classify_submission(submission, uploaded_image=None):
     """Run ML prediction and persist status, category, internal confidence, and points."""
     try:
-        prediction = predict_waste(submission.image.path)
+        prediction = predict_waste(uploaded_image or submission.image)
         category = prediction["category"]
         confidence = prediction["confidence"]
     except PredictionError as exc:

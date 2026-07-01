@@ -57,9 +57,9 @@ def load_model():
     )
 
 
-def _preprocess_image(image_path):
+def _preprocess_image(image_source):
     try:
-        with Image.open(image_path) as image:
+        with Image.open(image_source) as image:
             # Teachable Machine image models expect RGB 224x224 tensors.
             image = image.convert("RGB").resize((224, 224))
             image_array = np.asarray(image, dtype=np.float32)
@@ -71,12 +71,12 @@ def _preprocess_image(image_path):
     return np.expand_dims(normalized_image, axis=0)
 
 
-def predict_waste(image_path):
+def predict_waste(image_source):
     """Return the predicted waste category and confidence for an image path."""
     try:
         model = load_model()
         labels = load_labels()
-        input_tensor = _preprocess_image(image_path)
+        input_tensor = _preprocess_image(image_source)
         predictions = model.predict(input_tensor, verbose=0)
     except PredictionError:
         raise

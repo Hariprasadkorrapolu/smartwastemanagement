@@ -59,8 +59,12 @@ def home(request):
         if form.is_valid():
             submission = form.save(commit=False)
             submission.user = request.user
+
+            uploaded_image = request.FILES["image"]
+            submission.image_hash = calculate_image_hash(uploaded_image)
+            uploaded_image.seek(0)
             submission.save()
-            classify_submission(submission)
+            classify_submission(submission, uploaded_image)
             if submission.status == Submission.STATUS_DUPLICATE:
                 messages.warning(
                     request,
