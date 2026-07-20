@@ -1800,7 +1800,6 @@ form ul {
 .rewards-hero__stats span,
 .reward-card__heading span,
 .reward-mini-stat span,
-.impact-grid span,
 .achievement-card span {
     color: inherit;
     display: block;
@@ -1899,151 +1898,145 @@ form ul {
 
 .impact-grid {
     display: grid;
-    gap: 0.5rem;
+    gap: 16px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .impact-card {
     background: #ffffff;
-    border: 1px solid #e2efe5;
-    border-radius: 12px;
-    padding: 0.5rem 0.75rem;
+    border-radius: 18px;
+    padding: 24px;
     display: flex;
     align-items: center;
-    gap: 10px;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
+    gap: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 0;
+    height: 100%;
 }
 
 .impact-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(24, 89, 45, 0.06);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(24, 89, 45, 0.08), 0 4px 6px -2px rgba(24, 89, 45, 0.04);
 }
 
-/* Soft Gradients on hover */
-.impact-card--green {
-    color: #16a34a;
-    border-color: #dcfce7;
-}
-.impact-card--green:hover {
-    background: linear-gradient(135deg, #ffffff, #f0fdf4);
-    border-color: #16a34a;
-}
-
-.impact-card--purple {
-    color: #7c3aed;
-    border-color: #ede9fe;
-}
-.impact-card--purple:hover {
-    background: linear-gradient(135deg, #ffffff, #f5f3ff);
-    border-color: #7c3aed;
-}
-
-.impact-card--gold {
-    color: #ca8a04;
-    border-color: #fef9c3;
-}
-.impact-card--gold:hover {
-    background: linear-gradient(135deg, #ffffff, #fefce8);
-    border-color: #ca8a04;
-}
-
-.impact-card--blue {
-    color: #2563eb;
-    border-color: #dbeafe;
-}
-.impact-card--blue:hover {
-    background: linear-gradient(135deg, #ffffff, #eff6ff);
-    border-color: #2563eb;
-}
-
-/* Circular Icons */
 .impact-icon-circle {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    max-width: 42px;
-    min-height: 42px;
-    max-height: 42px;
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    max-width: 56px;
+    min-height: 56px;
+    max-height: 56px;
     border-radius: 50%;
     flex-shrink: 0;
-    padding: 0;
-    margin: 0;
+    transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.impact-icon-circle svg {
+.impact-card:hover .impact-icon-circle {
+    transform: scale(1.05);
+}
+
+.rewards-dashboard .impact-icon-circle svg {
     display: block;
-    width: 20px;
-    height: 20px;
-    margin: 0;
-    padding: 0;
-    transform: none;
-    position: static;
-    flex-shrink: 0;
-    stroke: currentColor;
+    width: 28px;
+    height: 28px;
+    margin: auto;
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
     fill: none;
+    flex-shrink: 0;
 }
 
-/* Soft Backgrounds for Icons */
-.bg-green-soft {
-    background-color: #dcfce7;
-    color: #16a34a;
-}
-
-.bg-purple-soft {
-    background-color: #f3e8ff;
-    color: #7c3aed;
-}
-
-.bg-gold-soft {
-    background-color: #fef9c3;
-    color: #ca8a04;
-}
-
-.bg-blue-soft {
-    background-color: #dbeafe;
-    color: #2563eb;
-}
-
-/* Text Details inside Card */
 .impact-card__details {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
     min-width: 0;
 }
 
 .impact-card__title {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: #355343;
+    font-size: 13px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
-    line-height: 1.2;
+    letter-spacing: 0.08em;
+    margin: 0 0 6px 0;
+    line-height: 1;
 }
 
 .impact-card__value {
-    font-size: 1.25rem;
-    font-weight: 850;
+    font-size: 34px;
+    font-weight: 700;
     color: #10231a;
-    line-height: 1.15;
-    margin: 0.05rem 0;
+    line-height: 1;
+    margin: 0 0 6px 0;
 }
 
 .impact-card__subtitle {
-    font-size: 0.68rem;
-    color: #8b978d;
+    font-size: 15px;
     font-weight: 500;
-    line-height: 1.2;
+    color: #617267;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    line-height: 1.2;
+    margin: 0;
+}
+
+/* Color palettes */
+.impact-card--green {
+    border: 1px solid #dcfce7;
+}
+
+.impact-card--green .impact-icon-circle {
+    background-color: #f0fdf4;
+    color: #16a34a;
+}
+
+.impact-card--green .impact-card__title {
+    color: #16a34a;
+}
+
+.impact-card--purple {
+    border: 1px solid #f3e8ff;
+}
+
+.impact-card--purple .impact-icon-circle {
+    background-color: #f5f3ff;
+    color: #7c3aed;
+}
+
+.impact-card--purple .impact-card__title {
+    color: #7c3aed;
+}
+
+.impact-card--gold {
+    border: 1px solid #fef3c7;
+}
+
+.impact-card--gold .impact-icon-circle {
+    background-color: #fffbeb;
+    color: #d97706;
+}
+
+.impact-card--gold .impact-card__title {
+    color: #d97706;
+}
+
+.impact-card--blue {
+    border: 1px solid #dbeafe;
+}
+
+.impact-card--blue .impact-icon-circle {
+    background-color: #eff6ff;
+    color: #2563eb;
+}
+
+.impact-card--blue .impact-card__title {
+    color: #2563eb;
 }
 
 .badge-journey {
@@ -2466,8 +2459,8 @@ form ul {
     }
 }
 
-/* 2. Mobile Viewports (<= 767px) */
-@media (max-width: 767px) {
+/* 2. Mobile Viewports (<= 991px) */
+@media (max-width: 991px) {
     .rewards-dashboard {
         padding: 1rem 12px;
     }
@@ -2482,7 +2475,8 @@ form ul {
     }
 
     .rewards-hero h1 {
-        font-size: 1.8rem; /* Scale down hero points by ~20% */
+        font-size: 1.8rem;
+        /* Scale down hero points by ~20% */
     }
 
     .rewards-hero__stats {
@@ -2528,34 +2522,10 @@ form ul {
         margin-bottom: 0.75rem;
     }
 
-    /* My Impact Cards Mobile */
+    /* My Impact Cards Mobile (<= 991px Tablet Viewport: 2x2 grid) */
     .impact-grid {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-
-    .impact-card {
-        padding: 0.85rem;
-        gap: 12px;
-        align-items: center;
-    }
-
-    .impact-icon-circle {
-        width: 46px;
-        height: 46px;
-        min-width: 46px;
-        max-width: 46px;
-        min-height: 46px;
-        max-height: 46px;
-    }
-
-    .impact-icon-circle svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    .impact-card__value {
-        font-size: 1.3rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
     }
 
     /* Badge Journey Mobile (Horizontal Scrollable) */
@@ -2644,12 +2614,12 @@ form ul {
         padding: 0.85rem 0;
     }
 
-    .reward-activity__item > span {
+    .reward-activity__item>span {
         grid-row: span 2;
         align-self: center;
     }
 
-    .reward-activity__item > div {
+    .reward-activity__item>div {
         display: flex;
         justify-content: space-between;
         align-items: baseline;
@@ -2657,13 +2627,13 @@ form ul {
         margin: 0;
     }
 
-    .reward-activity__item > div strong {
+    .reward-activity__item>div strong {
         order: 2;
         font-size: 0.95rem;
         color: #16a34a;
     }
 
-    .reward-activity__item > div p {
+    .reward-activity__item>div p {
         order: 1;
         margin: 0;
         font-weight: 600;
@@ -2691,18 +2661,9 @@ form ul {
         /* Mobile height (within 170px-210px) */
     }
 
-    .impact-icon-circle {
-        width: 46px;
-        height: 46px;
-        min-width: 46px;
-        max-width: 46px;
-        min-height: 46px;
-        max-height: 46px;
-    }
-
-    .impact-icon-circle svg {
-        width: 20px;
-        height: 20px;
+    .impact-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
     }
 
     .custom-control-btn {
@@ -2732,6 +2693,7 @@ form ul {
 
 /* 4. Touch Devices Hover Suppression */
 @media (hover: none) {
+
     .reward-card:hover,
     .impact-card:hover,
     .achievement-card:hover {
@@ -2886,7 +2848,7 @@ form ul {
     box-shadow: 0 10px 25px rgba(24, 54, 38, 0.04);
 }
 
-.guide-quick-card > span {
+.guide-quick-card>span {
     display: block;
     font-size: 0.75rem;
     font-weight: 800;
@@ -3005,7 +2967,8 @@ form ul {
 .guide-card__media {
     position: relative;
     width: 100%;
-    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    padding-top: 56.25%;
+    /* 16:9 Aspect Ratio */
     border-radius: 10px;
     overflow: hidden;
     background: #f1f5f9;
@@ -3263,11 +3226,11 @@ form ul {
     .guide-layout {
         grid-template-columns: 1fr;
     }
-    
+
     .guide-sidebar {
         flex-direction: row;
     }
-    
+
     .guide-tip-card,
     .guide-quick-card {
         flex: 1;
@@ -3286,7 +3249,7 @@ form ul {
         padding: 1.25rem 1rem;
         border-radius: 16px;
     }
-    
+
     .guide-hero__count {
         margin-top: 1rem;
         width: 100%;
@@ -3316,9 +3279,9 @@ form ul {
 
 body.auth-page-body {
     background: radial-gradient(circle at 15% 15%, rgba(223, 247, 229, 0.4), transparent 35%),
-                radial-gradient(circle at 85% 85%, rgba(234, 249, 239, 0.6), transparent 45%),
-                radial-gradient(circle at 50% 50%, rgba(242, 252, 244, 0.5), transparent 60%),
-                linear-gradient(135deg, #F8FFF8 0%, #F2FCF4 50%, #EAF9EF 100%) !important;
+        radial-gradient(circle at 85% 85%, rgba(234, 249, 239, 0.6), transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(242, 252, 244, 0.5), transparent 60%),
+        linear-gradient(135deg, #F8FFF8 0%, #F2FCF4 50%, #EAF9EF 100%) !important;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -3355,13 +3318,23 @@ body.auth-page-body .app-main {
 }
 
 @keyframes authFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes authCardSlideUp {
-    from { transform: translateY(30px); }
-    to { transform: translateY(0); }
+    from {
+        transform: translateY(30px);
+    }
+
+    to {
+        transform: translateY(0);
+    }
 }
 
 /* Branding */
@@ -3554,9 +3527,19 @@ body.auth-page-body .app-main {
 }
 
 @keyframes authShake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    75% { transform: translateX(4px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-4px);
+    }
+
+    75% {
+        transform: translateX(4px);
+    }
 }
 
 /* Login/Signup Submit Button */
@@ -3632,7 +3615,7 @@ body.auth-page-body .app-main {
         padding: 1.5rem 1.25rem;
         border-radius: 16px;
     }
-    
+
     .auth-branding h3 {
         font-size: 1.3rem;
     }

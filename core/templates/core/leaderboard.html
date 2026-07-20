@@ -139,7 +139,7 @@
         <div class="reward-card__heading">
             <h2>Achievement Highlights</h2>
         </div>
-        <div class="achievement-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem;">
+        <div class="achievement-grid">
             {% if top_3|length > 0 %}
             <article class="achievement-card is-unlocked">
                 <div class="achievement-card__icon">
@@ -228,6 +228,11 @@
 }
 .custom-leaderboard-table {
     min-width: auto !important;
+}
+.leaderboard-dashboard .achievement-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 /* Leaderboard visual podium styling */
@@ -448,6 +453,9 @@
 @media (max-width: 768px) {
     .rewards-hero__stats {
         grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .leaderboard-dashboard .achievement-grid {
+        grid-template-columns: 1fr;
     }
 }
 
